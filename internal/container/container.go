@@ -31,6 +31,24 @@ func SystemStart(bin string) error {
 	return cmd.Run()
 }
 
+func KernelConfigured(bin string) bool {
+	var out bytes.Buffer
+	cmd := exec.Command(bin, "system", "property", "get", "kernel.url")
+	cmd.Stdout = &out
+	cmd.Stderr = nil
+	if err := cmd.Run(); err != nil {
+		return false
+	}
+	return strings.TrimSpace(out.String()) != ""
+}
+
+func KernelSet(bin string) error {
+	cmd := exec.Command(bin, "system", "kernel", "set")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 func ImageExists(bin string, name string) (bool, error) {
 	var out bytes.Buffer
 	cmd := exec.Command(bin, "image", "list")

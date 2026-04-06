@@ -58,6 +58,14 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// ensure kernel is configured
+	if !container.KernelConfigured(bin) {
+		banner.Dim("installing default kernel...")
+		if err := container.KernelSet(bin); err != nil {
+			return fmt.Errorf("failed to install kernel: %w", err)
+		}
+	}
+
 	// build image if needed
 	exists, err := container.ImageExists(bin, imageName)
 	if err != nil {
