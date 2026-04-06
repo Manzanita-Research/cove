@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -110,6 +112,13 @@ func run(cmd *cobra.Command, args []string) error {
 		os.WriteFile(filepath.Join(claudeDir, ".claude.json"), data, 0644)
 	}
 
+	// extract oauth credentials from macOS keychain and write as .credentials.json
+	// (on macOS, Claude Code stores OAuth tokens in Keychain, but the Linux
+	// container expects them at ~/.claude/.credentials.json)
+	if creds, err := extractKeychainCredentials(); err == nil {
+		os.WriteFile(filepath.Join(claudeDir, ".credentials.json"), creds, 0600)
+	}
+
 	// print banner
 	fmt.Println()
 	banner.Warm("entering cove for: " + project)
@@ -160,6 +169,20 @@ func writeDockerfile() (string, error) {
 	}
 
 	return tmpDir, nil
+}
+
+func extractKeychainCredentials() ([]byte, error) {
+	// find Claude Code's keychain entry — try common service name patterns
+	for _, svc := range []string{
+		"Claude Code-credentials-4cb54bb9",
+		"Claude Code-credentials",
+	} {
+		out, err := exec.Command("security", "find-generic-password", "-s", svc, "-w").Output()
+		if err == nil {
+			return bytes.TrimSpace(out), nil
+		}
+	}
+	return nil, fmt.Errorf("no Claude Code credentials found in keychain")
 }
 
 func sanitizeName(name string) string {
