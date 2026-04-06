@@ -102,7 +102,13 @@ func run(cmd *cobra.Command, args []string) error {
 	if err := os.MkdirAll(claudeDir, 0755); err != nil {
 		return fmt.Errorf("failed to create ~/.claude: %w", err)
 	}
+
+	// copy .claude.json into .claude/ so we only need one directory mount
+	// (apple containers doesn't support single-file volume mounts)
 	claudeJSON := filepath.Join(home, ".claude.json")
+	if data, err := os.ReadFile(claudeJSON); err == nil {
+		os.WriteFile(filepath.Join(claudeDir, ".claude.json"), data, 0644)
+	}
 
 	// print banner
 	fmt.Println()
@@ -118,7 +124,6 @@ func run(cmd *cobra.Command, args []string) error {
 		Volumes: [][2]string{
 			{cwd, "/workspace"},
 			{claudeDir, "/home/cove/.claude"},
-			{claudeJSON, "/home/cove/.claude.json"},
 		},
 		WorkDir: "/workspace",
 		Image:   imageName,
@@ -139,6 +144,17 @@ func writeDockerfile() (string, error) {
 	}
 
 	if err := os.WriteFile(filepath.Join(tmpDir, "Dockerfile"), data, 0644); err != nil {
+		os.RemoveAll(tmpDir)
+		return "", err
+	}
+
+	entrypoint, err := embedFS.ReadFile("embed/entrypoint.sh")
+	if err != nil {
+		os.RemoveAll(tmpDir)
+		return "", err
+	}
+
+	if err := os.WriteFile(filepath.Join(tmpDir, "entrypoint.sh"), entrypoint, 0755); err != nil {
 		os.RemoveAll(tmpDir)
 		return "", err
 	}

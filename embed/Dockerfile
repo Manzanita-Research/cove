@@ -9,7 +9,10 @@ RUN apt-get update && apt-get install -y \
 RUN npm install -g @anthropic-ai/claude-code
 
 RUN useradd -m -s /bin/bash cove
-USER cove
 
+COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+
+USER cove
 WORKDIR /workspace
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["claude", "--dangerously-skip-permissions"]
