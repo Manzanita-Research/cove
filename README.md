@@ -1,4 +1,4 @@
-# claudebox
+# cove
 
 Sandboxed Claude Code sessions using [Apple Containers](https://github.com/apple/container).
 
@@ -7,7 +7,7 @@ One command drops you into an ephemeral Linux microVM where Claude Code runs wit
 ## Install
 
 ```
-go install github.com/manzanita-research/claudebox@latest
+go install github.com/manzanita-research/cove@latest
 ```
 
 Requires [Apple's container CLI](https://github.com/apple/container/releases) installed separately. macOS 26+ on Apple silicon.
@@ -16,7 +16,7 @@ Requires [Apple's container CLI](https://github.com/apple/container/releases) in
 
 ```bash
 cd ~/code/my-project
-claudebox
+cove
 ```
 
 That's it. First run builds the image (~30 seconds). Every run after is instant. Exit Claude to destroy the sandbox.
@@ -31,17 +31,17 @@ That's it. First run builds the image (~30 seconds). Every run after is instant.
 ### Flags
 
 ```
-claudebox --rebuild   # force rebuild the container image
-claudebox --version
-claudebox --help
+cove --rebuild   # force rebuild the container image
+cove --version
+cove --help
 ```
 
 ## How it works
 
-claudebox builds a Linux container image with Node.js, Claude Code, and common dev tools (git, ripgrep, fd, jq, etc). It runs that image as a lightweight Apple Container microVM with your project mounted at `/workspace` and auto-launches `claude --dangerously-skip-permissions`. When you exit Claude, the container is destroyed.
+cove builds a Linux container image with Node.js, Claude Code, and common dev tools (git, ripgrep, fd, jq, etc). It runs that image as a lightweight Apple Container microVM with your project mounted at `/workspace` and auto-launches `claude --dangerously-skip-permissions`. When you exit Claude, the container is destroyed.
 
 Only your current directory is exposed. Your dotfiles, other repos, system files — all invisible inside the box.
 
 ## We built this because we needed it
 
-`--dangerously-skip-permissions` is the best way to use Claude Code for real work, but it's dangerous on a bare filesystem. claudebox makes it safe by default.
+`--dangerously-skip-permissions` is the best way to use Claude Code for real work, but it's dangerous on a bare filesystem. cove makes it safe by default.

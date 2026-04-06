@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/manzanita-research/claudebox/internal/banner"
-	"github.com/manzanita-research/claudebox/internal/container"
+	"github.com/manzanita-research/cove/internal/banner"
+	"github.com/manzanita-research/cove/internal/container"
 	"github.com/spf13/cobra"
 )
 
@@ -23,10 +23,10 @@ var (
 	embedFS embed.FS
 )
 
-const imageName = "claudebox:latest"
+const imageName = "cove:latest"
 
 var rootCmd = &cobra.Command{
-	Use:   "claudebox",
+	Use:   "cove",
 	Short: "Sandboxed Claude Code sessions using Apple Containers",
 	Long:  "Drop into an ephemeral Linux microVM where Claude Code runs with --dangerously-skip-permissions, scoped to your current directory.",
 	RunE:  run,
@@ -65,7 +65,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if !exists || rebuild {
-		banner.Warm("building claudebox image...")
+		banner.Warm("building cove image...")
 
 		tmpDir, err := writeDockerfile()
 		if err != nil {
@@ -74,7 +74,7 @@ func run(cmd *cobra.Command, args []string) error {
 		defer os.RemoveAll(tmpDir)
 
 		if err := container.Build(bin, imageName, tmpDir); err != nil {
-			return fmt.Errorf("image build failed (try claudebox --rebuild to retry): %w", err)
+			return fmt.Errorf("image build failed (try cove --rebuild to retry): %w", err)
 		}
 		banner.Warm("image built")
 	}
@@ -97,7 +97,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	// print banner
 	fmt.Println()
-	banner.Warm("entering claudebox for: " + project)
+	banner.Warm("entering cove for: " + project)
 	banner.Dim("  mounted: " + cwd + " -> /workspace")
 	banner.Dim("  auth:    ~/.claude (shared with host)")
 	banner.Dim("  exit claude to destroy the sandbox")
@@ -105,7 +105,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	// run it
 	return container.Run(bin, container.RunOpts{
-		Name:    fmt.Sprintf("claudebox-%s-%d", project, os.Getpid()),
+		Name:    fmt.Sprintf("cove-%s-%d", project, os.Getpid()),
 		Volumes: [][2]string{{cwd, "/workspace"}, {claudeDir, "/root/.claude"}},
 		WorkDir: "/workspace",
 		Image:   imageName,
@@ -114,7 +114,7 @@ func run(cmd *cobra.Command, args []string) error {
 }
 
 func writeDockerfile() (string, error) {
-	tmpDir, err := os.MkdirTemp("", "claudebox-build-*")
+	tmpDir, err := os.MkdirTemp("", "cove-build-*")
 	if err != nil {
 		return "", err
 	}

@@ -3,7 +3,7 @@ package main
 import (
 	"embed"
 
-	"github.com/manzanita-research/claudebox/cmd"
+	"github.com/manzanita-research/cove/cmd"
 )
 
 //go:embed embed/Dockerfile

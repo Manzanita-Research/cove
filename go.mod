@@ -1,4 +1,4 @@
-module github.com/manzanita-research/claudebox
+module github.com/manzanita-research/cove
 
 go 1.26.1
 

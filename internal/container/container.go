@@ -11,7 +11,7 @@ import (
 func FindBinary() (string, error) {
 	path, err := exec.LookPath("container")
 	if err != nil {
-		return "", fmt.Errorf("claudebox requires Apple's container CLI\nInstall it from https://github.com/apple/container/releases")
+		return "", fmt.Errorf("cove requires Apple's container CLI\nInstall it from https://github.com/apple/container/releases")
 	}
 	return path, nil
 }
