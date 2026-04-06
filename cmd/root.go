@@ -102,6 +102,7 @@ func run(cmd *cobra.Command, args []string) error {
 	if err := os.MkdirAll(claudeDir, 0755); err != nil {
 		return fmt.Errorf("failed to create ~/.claude: %w", err)
 	}
+	claudeJSON := filepath.Join(home, ".claude.json")
 
 	// print banner
 	fmt.Println()
@@ -114,7 +115,11 @@ func run(cmd *cobra.Command, args []string) error {
 	// run it
 	return container.Run(bin, container.RunOpts{
 		Name:    fmt.Sprintf("cove-%s-%d", project, os.Getpid()),
-		Volumes: [][2]string{{cwd, "/workspace"}, {claudeDir, "/home/cove/.claude"}},
+		Volumes: [][2]string{
+			{cwd, "/workspace"},
+			{claudeDir, "/home/cove/.claude"},
+			{claudeJSON, "/home/cove/.claude.json"},
+		},
 		WorkDir: "/workspace",
 		Image:   imageName,
 		Cmd:     []string{"claude", "--dangerously-skip-permissions"},
