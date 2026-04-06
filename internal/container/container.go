@@ -25,6 +25,7 @@ func SystemStatus(bin string) error {
 
 func SystemStart(bin string) error {
 	cmd := exec.Command(bin, "system", "start")
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
