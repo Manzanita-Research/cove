@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/manzanita-research/claudebox/internal/banner"
 	"github.com/manzanita-research/claudebox/internal/container"
 	"github.com/spf13/cobra"
 )
+
+var nonAlphanumeric = regexp.MustCompile(`[^a-zA-Z0-9]+`)
 
 var (
 	Version = "dev"
@@ -55,7 +59,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	// build image if needed
-	exists, err := container.ImageExists(bin, "claudebox")
+	exists, err := container.ImageExists(bin, imageName)
 	if err != nil {
 		return fmt.Errorf("failed to check images: %w", err)
 	}
@@ -70,7 +74,7 @@ func run(cmd *cobra.Command, args []string) error {
 		defer os.RemoveAll(tmpDir)
 
 		if err := container.Build(bin, imageName, tmpDir); err != nil {
-			return fmt.Errorf("image build failed: %w", err)
+			return fmt.Errorf("image build failed (try claudebox --rebuild to retry): %w", err)
 		}
 		banner.Warm("image built")
 	}
@@ -80,13 +84,16 @@ func run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	project := filepath.Base(cwd)
+	project := sanitizeName(filepath.Base(cwd))
 
-	claudeDir, err := os.UserHomeDir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
-	claudeDir = filepath.Join(claudeDir, ".claude")
+	claudeDir := filepath.Join(home, ".claude")
+	if err := os.MkdirAll(claudeDir, 0755); err != nil {
+		return fmt.Errorf("failed to create ~/.claude: %w", err)
+	}
 
 	// print banner
 	fmt.Println()
@@ -124,4 +131,13 @@ func writeDockerfile() (string, error) {
 	}
 
 	return tmpDir, nil
+}
+
+func sanitizeName(name string) string {
+	name = nonAlphanumeric.ReplaceAllString(name, "-")
+	name = strings.Trim(name, "-")
+	if name == "" {
+		name = "project"
+	}
+	return name
 }
