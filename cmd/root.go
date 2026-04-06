@@ -114,7 +114,7 @@ func run(cmd *cobra.Command, args []string) error {
 	// run it
 	return container.Run(bin, container.RunOpts{
 		Name:    fmt.Sprintf("cove-%s-%d", project, os.Getpid()),
-		Volumes: [][2]string{{cwd, "/workspace"}, {claudeDir, "/root/.claude"}},
+		Volumes: [][2]string{{cwd, "/workspace"}, {claudeDir, "/home/cove/.claude"}},
 		WorkDir: "/workspace",
 		Image:   imageName,
 		Cmd:     []string{"claude", "--dangerously-skip-permissions"},

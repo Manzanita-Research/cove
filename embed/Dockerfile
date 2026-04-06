@@ -8,5 +8,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN npm install -g @anthropic-ai/claude-code
 
+RUN useradd -m -s /bin/bash cove
+USER cove
+
 WORKDIR /workspace
 CMD ["claude", "--dangerously-skip-permissions"]
